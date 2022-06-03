@@ -92,6 +92,9 @@ type Comment struct {
 	Value string
 }
 
+// EmptyLine represents an empty line in the sops tree for the file formats that actually support them.
+type EmptyLine struct{}
+
 // TreeItem is an item inside sops's tree
 type TreeItem struct {
 	Key   interface{}

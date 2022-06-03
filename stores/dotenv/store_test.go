@@ -11,6 +11,7 @@ import (
 var PLAIN = []byte(strings.TrimLeft(`
 VAR1=val1
 VAR2=val2
+
 #comment
 VAR3_unencrypted=val3
 VAR4=val4\nval4
@@ -26,6 +27,10 @@ var BRANCH = sops.TreeBranch{
 		Value: "val2",
 	},
 	sops.TreeItem{
+		Key:   sops.EmptyLine{},
+		Value: nil,
+	},
+	sops.TreeItem{
 		Key:   sops.Comment{"comment"},
 		Value: nil,
 	},
@@ -37,6 +42,10 @@ var BRANCH = sops.TreeBranch{
 		Key:   "VAR4",
 		Value: "val4\nval4",
 	},
+	sops.TreeItem{
+		Key:   sops.EmptyLine{},
+		Value: nil,
+	},
 }
 
 func TestLoadPlainFile(t *testing.T) {
@@ -44,6 +53,7 @@ func TestLoadPlainFile(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, BRANCH, branches[0])
 }
+
 func TestEmitPlainFile(t *testing.T) {
 	branches := sops.TreeBranches{
 		BRANCH,
