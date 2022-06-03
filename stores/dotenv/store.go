@@ -68,9 +68,11 @@ func (store *Store) LoadPlainFile(in []byte) (sops.TreeBranches, error) {
 
 	for _, line := range bytes.Split(in, []byte("\n")) {
 		if len(line) == 0 {
-			continue
-		}
-		if line[0] == '#' {
+			branch = append(branch, sops.TreeItem{
+				Key:   sops.EmptyLine{},
+				Value: nil,
+			})
+		} else if line[0] == '#' {
 			branch = append(branch, sops.TreeItem{
 				Key:   sops.Comment{Value: string(line[1:])},
 				Value: nil,
@@ -119,13 +121,18 @@ func (store *Store) EmitEncryptedFile(in sops.Tree) ([]byte, error) {
 // runtime object
 func (store *Store) EmitPlainFile(in sops.TreeBranches) ([]byte, error) {
 	buffer := bytes.Buffer{}
-	for _, item := range in[0] {
+	treeBranch := in[0]
+	for index, item := range treeBranch {
 		if isComplexValue(item.Value) {
 			return nil, fmt.Errorf("cannot use complex value in dotenv file: %s", item.Value)
 		}
 		var line string
 		if comment, ok := item.Key.(sops.Comment); ok {
 			line = fmt.Sprintf("#%s\n", comment.Value)
+		} else if _, ok := item.Key.(sops.EmptyLine); ok {
+			if index < len(treeBranch)-1 {
+				line = "\n"
+			}
 		} else {
 			value := strings.Replace(item.Value.(string), "\n", "\\n", -1)
 			line = fmt.Sprintf("%s=%s\n", item.Key, value)
